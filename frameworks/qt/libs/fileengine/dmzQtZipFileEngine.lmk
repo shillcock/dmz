@@ -1,0 +1,21 @@
+require "lmkQt"
+lmkQt.set_name "dmzQtZipFileEngine"
+lmk.set_type "shared"
+
+lmk.add_files {
+   "dmzQtZipFileEngineExport.h",
+   "dmzQtZipFileEngineHandler.h",
+   -- "dmzQtZipFileEngine.h",
+}
+
+lmk.add_files {
+   "dmzQtZipFileEngineHandler.cpp",
+   -- "dmzQtZipFileEngine.cpp",
+}
+
+lmk.add_libs {"dmzFoundation","dmzKernel",}
+lmkQt.add_libs {"QtCore",}
+
+lmk.add_vars ({
+   localDefines = "$(lmk.defineFlag)DMZ_QT_ZIP_FILE_ENGINE_EXPORT",
+},{win32 = true})
