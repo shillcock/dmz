@@ -5,12 +5,12 @@ lmk.set_type "shared"
 lmk.add_files {
    "dmzQtZipFileEngineExport.h",
    "dmzQtZipFileEngineHandler.h",
-   -- "dmzQtZipFileEngine.h",
+   "dmzQtZipFileEngine.h",
 }
 
 lmk.add_files {
    "dmzQtZipFileEngineHandler.cpp",
-   -- "dmzQtZipFileEngine.cpp",
+   "dmzQtZipFileEngine.cpp",
 }
 
 lmk.add_libs {"dmzFoundation","dmzKernel",}

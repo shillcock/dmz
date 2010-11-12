@@ -2,9 +2,8 @@
 #define DMZ_QT_ZIP_FILE_ENGINE_HANDLER_DOT_H
 
 #include <dmzQtZipFileEngineExport.h>
+#include <dmzTypesString.h>
 #include <QtCore/QAbstractFileEngineHandler>
-
-// class QAbstractFileEngine;
 
 
 namespace dmz {
