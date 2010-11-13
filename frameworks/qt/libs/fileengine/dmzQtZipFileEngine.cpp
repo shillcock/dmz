@@ -1,5 +1,6 @@
 #include <dmzFoundationReaderWriterZip.h>
 #include <dmzQtZipFileEngine.h>
+#include <dmzRuntimeLog.h>
 #include <QtCore/QDateTime>
 
 
@@ -7,38 +8,38 @@ struct dmz::QtZipFileEngine::State {
 
    String name;
    ReaderZip &zip;
+   Log *log;
 
-   State (const String &TheFileName, ReaderZip &theZip) :
+   State (const String &TheFileName, ReaderZip &theZip, Log *theLog) :
       name (TheFileName),
-      zip (theZip) {;}
+      zip (theZip),
+      log (theLog) {;}
 };
 
 
-dmz::QtZipFileEngine::QtZipFileEngine (const String &TheFileName, ReaderZip &theZip) :
+dmz::QtZipFileEngine::QtZipFileEngine (
+      const String &FileName,
+      ReaderZip &zip,
+      Log *log) :
       QAbstractFileEngine (),
-      _state (*(new State (TheFileName, theZip))) {
+      _state (*(new State (FileName, zip, log))) {
 
+   if (_state.log) {
+
+      _state.log->info << "QtZipFileEngine for : " << _state.name << endl;
+   }
 }
 
 
-dmz::QtZipFileEngine::~QtZipFileEngine () {
-
-   delete &_state;
-}
+dmz::QtZipFileEngine::~QtZipFileEngine () { delete &_state; }
 
 
 bool
-dmz::QtZipFileEngine::caseSensitive () const {
-
-   return false;
-}
+dmz::QtZipFileEngine::caseSensitive () const { return False; }
 
 
 bool
-dmz::QtZipFileEngine::close () {
-
-	return _state.zip.close_file ();
-}
+dmz::QtZipFileEngine::close () { return _state.zip.close_file (); }
 
 
 QStringList
@@ -46,8 +47,7 @@ dmz::QtZipFileEngine::entryList (
 		QDir::Filters filters,
 		const QStringList &NameFilters) const {
 
-	QStringList result;
-	return result;
+	return QStringList ();
 }
 
 
@@ -70,100 +70,78 @@ dmz::QtZipFileEngine::fileFlags (FileFlags type) const {
 QString
 dmz::QtZipFileEngine::fileName (FileName type) const {
 
-   QString result;
-   QFileInfo fi (_state.name.get_buffer ());
+   QString name (_state.name.get_buffer ());
+   Int32 slash = name.lastIndexOf ("/");
 
    switch (type) {
 
-      case BaseName: result = fi.baseName (); break;
-      case PathName: result = fi.path (); break;
-      case AbsoluteName: result = fi.absoluteFilePath (); break;
-      case AbsolutePathName: result = fi.absolutePath (); break;
-      default: result = fi.filePath (); break;
-    }
+      case BaseName:
+         if (slash != -1) { name.remove (0, slash + 1); }
+         break;
 
-    return result;
+      case PathName:
+      case AbsolutePathName:
+         if (slash != -1) { name = name.left (slash); }
+         break;
+
+      default:
+         break;
+   }
+
+    return name;
 }
 
 
 QDateTime
-dmz::QtZipFileEngine::fileTime (FileTime time) const {
-
-   QDateTime result;
-   return result;
-}
+dmz::QtZipFileEngine::fileTime (FileTime time) const { return QDateTime (); }
 
 
 bool
-dmz::QtZipFileEngine::isRelativePath () const {
-
-    return false;
-}
+dmz::QtZipFileEngine::isRelativePath () const { return False; }
 
 
 bool
 dmz::QtZipFileEngine::mkdir (const QString &, bool createParentDirectories) const {
 
-   return false;
+   return False;
 }
 
 
 //bool
-//dmz::QtZipFileEngine::isSequential() const {
-
-//    return true;
-//}
+//dmz::QtZipFileEngine::isSequential() const { return True; }
 
 
 bool
 dmz::QtZipFileEngine::open (QIODevice::OpenMode flags) {
 
    bool result (False);
-
-   if (flags & QIODevice::ReadOnly) {
-
-      result = _state.zip.open_file (_state.name);
-   }
-
+   if (flags & QIODevice::ReadOnly) { result = _state.zip.open_file (_state.name); }
    return result;
 }
 
 
 QString
-dmz::QtZipFileEngine::owner (FileOwner owner) const {
-
-   QString result;
-   return result;
-}
+dmz::QtZipFileEngine::owner (FileOwner owner) const { return QString (); }
 
 
 uint
-dmz::QtZipFileEngine::ownerId (FileOwner owner) const {
-
-   uint result (-2);
-   return result;
-}
+dmz::QtZipFileEngine::ownerId (FileOwner owner) const { return -2; }
 
 
 qint64
 dmz::QtZipFileEngine::read (char *data, qint64 len) {
 
+_state.log->error << "read: " << len << endl;
    return _state.zip.read_file (data, len);
 }
 
 
 bool
-dmz::QtZipFileEngine::remove () {
-
-    return false;
-}
+dmz::QtZipFileEngine::remove () { return False; }
 
 
 bool
-dmz::QtZipFileEngine::rename (const QString &) {
-
-    return false;
-}
+dmz::QtZipFileEngine::rename (const QString &) { return False; }
 
 
 bool
@@ -171,40 +149,36 @@ dmz::QtZipFileEngine::rmdir (
       const QString &DirName,
       bool recurseParentDirectories) const {
 
-   return false;
+   return False;
 }
 
 
 void
-dmz::QtZipFileEngine::setFileName (const QString &TheFileName){
+dmz::QtZipFileEngine::setFileName (const QString &TheFileName) {
 
-   _state.name = qPrintable (TheFileName);
+   if (_state.log) {
+
+      _state.log->warn << "setFileName not supported" << endl;
+   }
+
+//   _state.name = qPrintable (TheFileName);
 }
 
 
 bool
-dmz::QtZipFileEngine::setPermissions (uint perms) {
-
-    return false;
-}
+dmz::QtZipFileEngine::setPermissions (uint perms) { return false; }
 
 
 bool
-dmz::QtZipFileEngine::setSize (qint64 size) {
-
-   return false;
-}
+dmz::QtZipFileEngine::setSize (qint64 size) { return false; }
 
 
-qint64
-dmz::QtZipFileEngine::size () const {
+//qint64
+//dmz::QtZipFileEngine::size () const {
 
-   return (qint64)_state.zip.get_file_size ();
-}
+//   return (qint64)_state.zip.get_file_size ();
+//}
 
 
 qint64
-dmz::QtZipFileEngine::write (const char *data, qint64 len) {
-
-    return -1;
-}
+dmz::QtZipFileEngine::write (const char *data, qint64 len) { return -1; }

@@ -8,11 +8,13 @@
 
 namespace dmz {
 
+   class Log;
+
    class DMZ_QT_ZIP_FILE_ENGINE_LINK_SYMBOL QtZipFileEngineHandler :
          public QAbstractFileEngineHandler {
 
       public:
-         QtZipFileEngineHandler (const String &ArchiveName);
+         QtZipFileEngineHandler (const String &ArchiveName, Log *log = 0);
          virtual ~QtZipFileEngineHandler ();
 
          QAbstractFileEngine *create (const QString &Filename) const;

@@ -7,6 +7,7 @@
 
 namespace dmz {
 
+   class Log;
    class ReaderZip;
    class String;
 
@@ -14,7 +15,7 @@ namespace dmz {
          public QAbstractFileEngine {
 
       public:
-         QtZipFileEngine (const String &FileName, ReaderZip &zip);
+         QtZipFileEngine (const String &FileName, ReaderZip &zip, Log *log);
          virtual ~QtZipFileEngine ();
 
          bool caseSensitive () const;
@@ -41,7 +42,7 @@ namespace dmz {
          void setFileName (const QString &File);
          bool setPermissions (uint perms);
          bool setSize (qint64 size);
-         qint64 size () const;
+//         qint64 size () const;
          qint64 write (const char *data, qint64 len);
 
       protected:
