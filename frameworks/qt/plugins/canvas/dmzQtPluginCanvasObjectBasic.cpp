@@ -82,11 +82,11 @@ dmz::QtCanvasObjectText::set_text (const QString &Text) {
 
    prepareGeometryChange ();
    _text = Text;
-   
+
    if ((_maxLength > 0) && (_text.length () > _maxLength)) {
-     
+
       _text.resize (_maxLength);
-      _text += QString (3, '.'); 
+      _text += QString (3, '.');
    }
 
    update ();
@@ -579,7 +579,7 @@ dmz::QtPluginCanvasObjectBasic::_create_item (
    if (parent) {
 
       group = new QtCanvasObjectGroup (parent);
-      
+
       QGraphicsItem *item (0);
 
       ConfigIterator it;
@@ -610,6 +610,15 @@ dmz::QtPluginCanvasObjectBasic::_create_item (
                item->setData (QtCanvasObjectHandleIndex, (quint64)os.ObjHandle);
             }
          }
+         else if (DataName == "ellipse") {
+
+            item =  _create_ellipse_item (os, group, cd);
+
+            if (Isect) {
+
+               item->setData (QtCanvasObjectHandleIndex, (quint64)os.ObjHandle);
+            }
+         }
          else if (DataName == "group") {
 
             item = _create_item (os, group, cd, table);
@@ -619,7 +628,7 @@ dmz::QtPluginCanvasObjectBasic::_create_item (
 
             item->setFlag (QGraphicsItem::ItemIgnoresParentOpacity, true);
             item->setFlag (QGraphicsItem::ItemDoesntPropagateOpacityToChildren, true);
-            
+
             item->setZValue (z++);
 
             if (ItemName) {
@@ -793,6 +802,75 @@ dmz::QtPluginCanvasObjectBasic::_create_svg_item (
       QRectF bound = item->boundingRect ();
 
       item->translate (bound.width () * -0.5f, bound.height () * -0.5f);
+   }
+
+   return item;
+}
+
+
+QGraphicsEllipseItem *
+dmz::QtPluginCanvasObjectBasic::_create_ellipse_item (
+      ObjectStruct &os,
+      QGraphicsItem *parent,
+      const Config &Data) {
+
+   QGraphicsEllipseItem *item (new QGraphicsEllipseItem (parent));
+
+   ConfigIterator it;
+   Config cd;
+
+   while (Data.get_next_config (it, cd)) {
+
+      const String DataName (cd.get_name ().to_lower ());
+
+      if (DataName == "radius") {
+
+         Float32 radius (config_to_float32 (cd));
+         QRectF rect (radius * -0.5, radius * -0.5, radius, radius);
+         item->setRect (rect);
+      }
+      else if (DataName == "size") {
+
+         QSizeF size (config_to_qsizef (cd));
+         QRectF rect (size.width () * -0.5, size.height () * -0.5, size.width (), size.height());
+
+         item->setRect (rect);
+      }
+      else if (DataName == "translate") {
+
+         Vector vec (config_to_vector (cd));
+         String itemName = config_to_string ("name", cd);
+
+         if (itemName) {
+
+            QGraphicsItem *img = os.itemTable.lookup (itemName);
+            if (img) {
+
+               QRectF rect = img->boundingRect ();
+               Vector rectVec;
+               if (vec.get_x () == 0) { rectVec.set_x (0); }
+               else if (vec.get_x() > 0) { rectVec.set_x (rect.center ().x ()); }
+               else { rectVec.set_x (-rect.center ().x ()); }
+
+               if (vec.get_y () == 0) { rectVec.set_y (0); }
+               else if (vec.get_y () > 0) { rectVec.set_y (rect.center ().y ()); }
+               else { rectVec.set_y (-rect.center ().y ()); }
+
+               vec += rectVec;
+               item->setPos (vec.get_x (), vec.get_y ());
+            }
+         }
+         else { item->translate (vec.get_x (), vec.get_y ()); }
+      }
+      else if (DataName == "scale") {
+
+         Vector vec (config_to_vector (cd));
+
+         if (vec.get_x () && vec.get_y ()) {
+
+            item->scale (vec.get_x (), vec.get_y ());
+         }
+      }
    }
 
    return item;

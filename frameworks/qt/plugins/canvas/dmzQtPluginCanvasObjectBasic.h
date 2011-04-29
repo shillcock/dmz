@@ -263,6 +263,11 @@ namespace dmz {
             const Config &Data,
             HashTableStringTemplate<String> &table);
 
+         QGraphicsEllipseItem *_create_ellipse_item (
+            ObjectStruct &os,
+            QGraphicsItem *parent,
+            const Config &Data);
+
          QtCanvasObjectText *_create_text_item (
             ObjectStruct &os,
             QGraphicsItem *parent,
